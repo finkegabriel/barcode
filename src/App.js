@@ -1,5 +1,8 @@
-import React from 'react';
+import React,{useRef} from 'react';
 import BarcodeScannerComponent from "react-webcam-barcode-scanner";
+import useSound from 'use-sound';
+import boopSfx from './barcode.mp3';
+import debounce from 'lodash.debounce';
 
 const styles = {
   circle: {
@@ -21,22 +24,32 @@ const styles = {
 }
 
 function App() {
-
-  const [data, setData] = React.useState('Not Found');
-  console.log(data);
+  const [play] = useSound(boopSfx);
+  const [data, setData] = React.useState(0);
+  const [last, setLast] = React.useState(0);
+  const debouncedSave = useRef(debounce(nextValue => setLast(nextValue), 10)).current;
+    const handleOnChange = (result) =>{
+      if(result!==undefined){
+        setData(result.text);
+        console.log("first ",data);
+        console.log("saecond ",last);
+        if(data!==last){
+          debouncedSave(result.text);
+          setLast(0);
+        }
+      }
+    }
   return (
     <>
       <center>
-        <span style={(data !== 'Not Found') ? styles.circleGreen : styles.circle} class="dot"></span>
+        <span style={(data !== last) ? styles.circleGreen : styles.circle} class="dot"></span>
+        {(data !== last) ? play() : ""}
       </center>
       <center>
         <BarcodeScannerComponent
           width={500}
           height={500}
-          onUpdate={(err, result) => {
-            if (result) setData(result.text)
-            else setData('Not Found')
-          }}
+          onUpdate={(err, result) => handleOnChange(result)}
         />
         <p>{data}</p>
       </center>
