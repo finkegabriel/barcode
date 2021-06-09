@@ -23,7 +23,7 @@ const styles = {
 function App() {
 
   const [data, setData] = React.useState('Not Found');
-
+  console.log(data);
   return (
     <>
       <center>
