@@ -1,4 +1,4 @@
-import React,{useRef} from 'react';
+import React, { useRef } from 'react';
 import BarcodeScannerComponent from "react-webcam-barcode-scanner";
 import useSound from 'use-sound';
 import boopSfx from './barcode.mp3';
@@ -23,22 +23,44 @@ const styles = {
   }
 }
 
+function updateData(text,setText) {
+  return (
+    <div>
+      <form>
+        <label for="fname">Name</label>
+        <br>
+        </br>
+        <input type="text" id="fname" name="fname" placeholder="Bush's beans" onChange={(e)=>setText(e.target.value)} value={text}></input>
+        <br></br>
+        <input type="submit" value="Submit"></input>
+      </form>
+    </div>
+  )
+}
+
+function scan() {
+
+}
+
 function App() {
   const [play] = useSound(boopSfx);
+  const [text,setText] = React.useState("");
   const [data, setData] = React.useState(0);
   const [last, setLast] = React.useState(0);
+  const [update, setUpdate] = React.useState(false);
   const debouncedSave = useRef(debounce(nextValue => setLast(nextValue), 10)).current;
-    const handleOnChange = (result) =>{
-      if(result!==undefined){
-        setData(result.text);
-        console.log("first ",data);
-        console.log("saecond ",last);
-        if(data!==last){
-          debouncedSave(result.text);
-          setLast(0);
-        }
+
+  const handleOnChange = (result) => {
+    if (result !== undefined) {
+      setData(result.text);
+      console.log("first ", data);
+      console.log("saecond ", last);
+      if (data !== last) {
+        debouncedSave(result.text);
+        setLast(0);
       }
     }
+  }
   return (
     <>
       <center>
@@ -47,11 +69,15 @@ function App() {
       </center>
       <center>
         <BarcodeScannerComponent
-          width={500}
-          height={500}
+          width={200}
+          height={200}
           onUpdate={(err, result) => handleOnChange(result)}
         />
         <p>{data}</p>
+        <button onClick={() => setUpdate(true)}>Update</button>
+        {
+          ((update === true) ? updateData(text,setText) : <div></div>)
+        }
       </center>
     </>
   )
