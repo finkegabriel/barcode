@@ -31,7 +31,7 @@ function App() {
 
   const handleUpdate = async (name) => {
     try {
-      const datas = await fetch(`http://localhost:3011/grocery`, {
+      const datas = await fetch(`http://localhost:49160/grocery`, {
         method: 'POST',
         body: JSON.stringify({ name, data }), headers: { 'Content-Type': 'application/json' }
       });
@@ -60,7 +60,7 @@ function App() {
   const handleOnChange = async (result) => {
     if (result !== undefined) {
       try {
-        const datas = await fetch(`http://localhost:3011/grocery?${stringify({ code: data })}`);
+        const datas = await fetch(`http://localhost:49160/grocery?${stringify({ code: data })}`);
         const final = await datas.json();
         setData(result.text);
         console.log("final ", final);
@@ -72,7 +72,7 @@ function App() {
           try {
             if (update === false) {
               console.log("we are sending data ", data);
-              const datasq = await fetch(`http://localhost:3011/grocery/list`, {
+              const datasq = await fetch(`http://localhost:49160/grocery/list`, {
                 method: 'POST',
                 body: JSON.stringify({ data: data }), headers: { 'Content-Type': 'application/json' }
               });
