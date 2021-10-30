@@ -3,6 +3,7 @@ import BarcodeScannerComponent from "react-webcam-barcode-scanner";
 import useSound from 'use-sound';
 import boopSfx from './barcode.mp3';
 import debounce from 'lodash.debounce';
+import { stringify } from 'query-string';
 
 const styles = {
   circle: {
@@ -23,34 +24,42 @@ const styles = {
   }
 }
 
-function updateData(text,setText) {
-  return (
-    <div>
-      <form>
-        <label for="fname">Name</label>
-        <br>
-        </br>
-        <input type="text" id="fname" name="fname" placeholder="Bush's beans" onChange={(e)=>setText(e.target.value)} value={text}></input>
-        <br></br>
-        <input type="submit" value="Submit"></input>
-      </form>
-    </div>
-  )
-}
-
-function scan() {
-
-}
-
 function App() {
   const [play] = useSound(boopSfx);
-  const [text,setText] = React.useState("");
+  const [text, setText] = React.useState(0);
   const [data, setData] = React.useState(0);
   const [last, setLast] = React.useState(0);
   const [update, setUpdate] = React.useState(false);
+  const [updateCode, setCode] = React.useState(0);
   const debouncedSave = useRef(debounce(nextValue => setLast(nextValue), 10)).current;
 
-  const handleOnChange = (result) => {
+  const handleUpdate = async (name) => {
+    console.log("update", name);
+    try {
+      const datas = await fetch(`http://localhost:3010/grocery`, { method: 'POST', body: { name: name }, headers: { 'Content-Type': 'application/json' } });
+      const final = await datas.json();
+      console.log("data ", final);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  const updateData = (text, setText) => {
+    return (
+      <div>
+        <form>
+          <label for="fname">Name</label>
+          <br>
+          </br>
+          <input type="text" id="fname" name="fname" placeholder="Bush's beans" onChange={(e) => setText(e.target.value)} value={text}></input>
+          <br></br>
+          <input type="submit" name="Update" value="Update" onClick={() => handleUpdate(text)}></input>
+        </form>
+      </div>
+    )
+  }
+
+  const handleOnChange = async (result) => {
     if (result !== undefined) {
       setData(result.text);
       console.log("first ", data);
@@ -59,6 +68,19 @@ function App() {
         debouncedSave(result.text);
         setLast(0);
       }
+      try {
+        const datas = await fetch(`http://localhost:3010/grocery?${stringify({ code: result.text })}`);
+        const final = await datas.json();
+        console.log("final ", final);
+        if (final.data === "update") {
+          setUpdate(true);
+        } else {
+          setUpdate(false);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+
     }
   }
   return (
@@ -74,9 +96,9 @@ function App() {
           onUpdate={(err, result) => handleOnChange(result)}
         />
         <p>{data}</p>
-        <button onClick={() => setUpdate(true)}>Update</button>
+        {/* <button onClick={() => setUpdate(true)}>Update</button> */}
         {
-          ((update === true) ? updateData(text,setText) : <div></div>)
+          ((update === true) ? updateData(text, setText) : <div></div>)
         }
       </center>
     </>
