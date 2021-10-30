@@ -34,7 +34,6 @@ function App() {
   const debouncedSave = useRef(debounce(nextValue => setLast(nextValue), 10)).current;
 
   const handleUpdate = async (name) => {
-    console.log("update", name);
     try {
       const datas = await fetch(`http://localhost:3010/grocery`, { method: 'POST', body:((JSON.stringify({name,data}))), headers: { 'Content-Type': 'application/json' } });
       const final = await datas.json();
@@ -53,7 +52,7 @@ function App() {
           </br>
           <input type="text" id="fname" name="fname" placeholder="Bush's beans" onChange={(e) => setText(e.target.value)} value={text}></input>
           <br></br>
-          <input type="button" name="Update" value="Update" onClick={() => handleUpdate(text)}></input>
+          <input type="submit" name="Update" value="Update" onClick={() => handleUpdate(text)}></input>
         </form>
       </div>
     )
@@ -62,8 +61,6 @@ function App() {
   const handleOnChange = async (result) => {
     if (result !== undefined) {
       setData(result.text);
-      console.log("first ", data);
-      console.log("saecond ", last);
       if (data !== last) {
         debouncedSave(result.text);
         setLast(0);
