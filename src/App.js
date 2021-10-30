@@ -36,7 +36,7 @@ function App() {
   const handleUpdate = async (name) => {
     console.log("update", name);
     try {
-      const datas = await fetch(`http://localhost:3010/grocery`, { method: 'POST', body: { name: name }, headers: { 'Content-Type': 'application/json' } });
+      const datas = await fetch(`http://localhost:3010/grocery`, { method: 'POST', body:((JSON.stringify({name,data}))), headers: { 'Content-Type': 'application/json' } });
       const final = await datas.json();
       console.log("data ", final);
     } catch (e) {
@@ -53,7 +53,7 @@ function App() {
           </br>
           <input type="text" id="fname" name="fname" placeholder="Bush's beans" onChange={(e) => setText(e.target.value)} value={text}></input>
           <br></br>
-          <input type="submit" name="Update" value="Update" onClick={() => handleUpdate(text)}></input>
+          <input type="button" name="Update" value="Update" onClick={() => handleUpdate(text)}></input>
         </form>
       </div>
     )
