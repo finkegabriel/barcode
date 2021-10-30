@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 import BarcodeScannerComponent from "react-webcam-barcode-scanner";
 import useSound from 'use-sound';
 import boopSfx from './barcode.mp3';
-import debounce from 'lodash.debounce';
 import { stringify } from 'query-string';
 
 const styles = {
@@ -28,14 +27,14 @@ function App() {
   const [play] = useSound(boopSfx);
   const [text, setText] = React.useState(0);
   const [data, setData] = React.useState(0);
-  const [last, setLast] = React.useState(0);
   const [update, setUpdate] = React.useState(false);
-  const [updateCode, setCode] = React.useState(0);
-  const debouncedSave = useRef(debounce(nextValue => setLast(nextValue), 10)).current;
 
   const handleUpdate = async (name) => {
     try {
-      const datas = await fetch(`http://localhost:3010/grocery`, { method: 'POST', body:((JSON.stringify({name,data}))), headers: { 'Content-Type': 'application/json' } });
+      const datas = await fetch(`http://localhost:3011/grocery`, {
+        method: 'POST',
+        body: JSON.stringify({ name, data }), headers: { 'Content-Type': 'application/json' }
+      });
       const final = await datas.json();
       console.log("data ", final);
     } catch (e) {
@@ -60,31 +59,41 @@ function App() {
 
   const handleOnChange = async (result) => {
     if (result !== undefined) {
-      setData(result.text);
-      if (data !== last) {
-        debouncedSave(result.text);
-        setLast(0);
-      }
       try {
-        const datas = await fetch(`http://localhost:3010/grocery?${stringify({ code: result.text })}`);
+        const datas = await fetch(`http://localhost:3011/grocery?${stringify({ code: data })}`);
         const final = await datas.json();
+        setData(result.text);
         console.log("final ", final);
-        if (final.data === "update") {
+        if (final[0].name === "") {
           setUpdate(true);
         } else {
           setUpdate(false);
+          setData(result.text);
+          try {
+            if (update === false) {
+              console.log("we are sending data ", data);
+              const datasq = await fetch(`http://localhost:3011/grocery/list`, {
+                method: 'POST',
+                body: JSON.stringify({ data: data }), headers: { 'Content-Type': 'application/json' }
+              });
+              const finals = await datasq.json();
+              console.log("data ", finals);
+              return finals;
+            }
+          } catch (e) {
+            console.log(e);
+          }
         }
       } catch (e) {
         console.log(e);
       }
-
     }
   }
   return (
     <>
       <center>
-        <span style={(data !== last) ? styles.circleGreen : styles.circle} class="dot"></span>
-        {(data !== last) ? play() : ""}
+        <span style={(data) ? styles.circleGreen : styles.circle} class="dot"></span>
+        {/* {(data !== last) ? play() : ""} */}
       </center>
       <center>
         <BarcodeScannerComponent
